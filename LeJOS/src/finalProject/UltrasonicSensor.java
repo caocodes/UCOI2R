@@ -19,7 +19,9 @@ public class UltrasonicSensor {
         distance = 255;
     }
 
-    // get the average distance reading for 10 samples
+    /**
+     * @return average distance reading for 10 samples
+     */
     public int distance() {
         float [] sample = new float[distMode.sampleSize()];
         distMode.fetchSample(sample, 0);

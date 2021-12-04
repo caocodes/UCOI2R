@@ -1,4 +1,4 @@
-package realFinalProject;
+package finalProject;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -13,19 +13,18 @@ import lejos.robotics.navigation.Navigator;
 import lejos.robotics.navigation.Pose;
 import lejos.utility.Delay;
 
-public class Main {
+public class FinalProject {
 	static Deque<MazeNode> nodeStack = new ArrayDeque<>();
 	static Deque<MazeNode> exitPlan = new ArrayDeque<>();
 
-	// TODO check dimensions below for me
-	public static final float MAZE_LENGTH = 500; // TODO @soups check size for me
-	public static final float MAZE_WIDTH = 500; // TODO @soups check size for me
-	public static final float NODE_SIZE = MAZE_LENGTH / 100; // 5 nodes x 5 nodes maze
+	public static final float NODE_SIZE = 25.4f;
+	public static final float MAZE_LENGTH = NODE_SIZE*3;
+	public static final float MAZE_WIDTH = NODE_SIZE*3;
 	public static final float MOVE_INC = NODE_SIZE / 2; // TODO check me. move increments in mm, stops midway between two nodes and look for marker to ensure robot is centered
 	public static final float MOVE_TOL = 10; // move tolerance mm
 	public static final float HEAD_TOL = 15; // heading tolerance degrees
-	public static final int BALL_COLOR = Color.BLUE;
-	public static final int EXIT_COLOR = Color.RED;
+	public static final int BALL_COLOR = Color.BLUE; // 2
+	public static final int EXIT_COLOR = Color.RED; // 0
 	// TODO check my headings
 	public static final float LEFT_HEADING = 0; //degs
 	public static final float FWD_HEADING = 90; //degs
@@ -33,7 +32,6 @@ public class Main {
 	public static final float BACK_HEADING = 270; //degs
 	
 	public static void main(String[] args) {
-		Main main = new Main();
 		Pilot pilot = new Pilot();
 		Navigator nav = new Navigator(pilot);
 		TheClaw theClaw = new TheClaw(MotorPort.C);
@@ -45,6 +43,9 @@ public class Main {
 		MazeNode currentNode = new MazeNode(0, 0); 	// center of the left-bottom-most node
 		currentNode.setVisited(true);
 		nodeStack.push(currentNode);
+		System.out.println("Node stack: " + nodeStack);
+		System.out.println("Current node: " + currentNode);
+		
 		MazeNode frontNode = null;
 		MazeNode leftNode = null;
 		MazeNode rightNode = null;
@@ -63,6 +64,7 @@ public class Main {
 		while (!Button.ESCAPE.isDown()) {
 			// Check ball
 			int color = colorSensor.getColor();
+			System.out.println("Saw color: " + color);
 			if ((color == BALL_COLOR) || (color == 7) || (color == 1)) { // TODO @soups why 7 and 1 too?
 				pilot.travel(5);
 				theClaw.grab();
@@ -70,6 +72,7 @@ public class Main {
 					pilot.setBallCaptured(true);
 					
 					if(!exitPlan.isEmpty()) {
+						System.out.println("Exit plan: " + exitPlan);
 						exit(pilot, theClaw);
 						break;
 					}
@@ -78,15 +81,23 @@ public class Main {
 
 			// Look for neighbors: front, left right
 			mast.lookFront();
-			if (ussr.distance() > MOVE_INC) {
+			System.out.println("Look front");
+			int distance = ussr.distance();
+			System.out.println("distance: " + distance);
+			if (distance > MOVE_INC) {
 				frontNode = makeFrontNode(pilot.getHeading(), currentNode.getX(), currentNode.getY());
-				currentNode.addNeighbor(frontNode);
+				if(frontNode != null) {
+					System.out.println("front node made: " + frontNode);
+					currentNode.addNeighbor(frontNode);
+				}	
 			}
 
 			mast.lookLeft();
+			System.out.println("Look left");
 			if (ussr.distance() > MOVE_INC) {
 				leftNode = makeLeftNode(pilot.getHeading(), currentNode.getX(), currentNode.getY());
 				if (leftNode != null) {
+					System.out.println("left node made: " + leftNode);
 					currentNode.addNeighbor(leftNode);
 				}
 			}
@@ -95,34 +106,55 @@ public class Main {
 			if (ussr.distance() > MOVE_INC) {
 				rightNode = makeRightNode(pilot.getHeading(), currentNode.getX(), currentNode.getY());
 				if (rightNode != null) {
+					System.out.println("right node made: " + rightNode);
 					currentNode.addNeighbor(rightNode);
 				}
 			}
 
 			MazeNode nextNode = currentNode.getUnvisitedNeighbor();
 			if (nextNode == null) { // deadend or visited all neighbors already
+				System.out.println("dead end / visited all");
 				nextNode = retrace(pilot);
+				currentNode = nodeStack.peek();
+				System.out.println("retrace done");
+				System.out.println("current node: " + currentNode);
+				System.out.println("next node: " + nextNode);
 			} else { // not deadend
 				// check exit
-				if (currentNode.isExitNode(MAZE_WIDTH, MAZE_LENGTH) || colorSensor.getColor() == EXIT_COLOR) {
+				color = colorSensor.getColor();
+				System.out.println("Saw color: " + color);
+				if (currentNode.isExitNode(MAZE_WIDTH, MAZE_LENGTH) || color == EXIT_COLOR) {
+					System.out.println("Exited maze");
 					if (pilot.isBallCaptured()) {
+						System.out.println("Ball captured. Try claw");
 						theClaw.release();
 						break;
 					} else {
+						System.out.println("Ball not captured. Make exit plan");
 						exitPlan.addAll(nodeStack);
 						nextNode = retrace(pilot);
+						currentNode = nodeStack.peek();
+						System.out.println("retrace done");
+						System.out.println("current node: " + currentNode);
+						System.out.println("next node: " + nextNode);
 					}
 				}
-				
-				nextNode.setCameFrom(currentNode);
-				nodeStack.push(nextNode);
-				moveListener.setNode(nextNode);
-				pilot.goTo(currentNode, nextNode);
-				while(pilot.isMoving()) {
-					Delay.msDelay(1000);
-				}
-				currentNode = nextNode;
-				currentNode.setVisited(true);
+			}
+			
+			nextNode.setCameFrom(currentNode);
+			nodeStack.push(nextNode);
+			System.out.println("Node stack: " + nodeStack);
+			moveListener.setNode(nextNode);
+			pilot.goTo(currentNode, nextNode);
+			while(pilot.isMoving()) {
+				Delay.msDelay(1000);
+			}
+			currentNode = nextNode;
+			currentNode.setVisited(true);
+			System.out.println("Heading: " + pilot.getHeading());
+			System.out.println("current node: " + currentNode);
+			while(!Button.ENTER.isDown()) {
+				Delay.msDelay(1000);
 			}
 		}
 	}
@@ -209,6 +241,11 @@ public class Main {
 		return nodeStack.peek().getUnvisitedNeighbor();
 	}
 	
+	/**
+	 * exit the maze
+	 * @param pilot
+	 * @param theClaw
+	 */
 	public static void exit(Pilot pilot, TheClaw theClaw) {
 		if(exitPlan.isEmpty() || nodeStack.isEmpty())
 			return;

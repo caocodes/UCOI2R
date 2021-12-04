@@ -16,7 +16,7 @@ public class Pilot extends MovePilot {
 	static final double MAX_TURN_ANGLE = 15; // deg
 	static final double TURN_INCREMENT = 1; // deg
 	
-	private float heading = Main.FWD_HEADING;
+	private float heading = FinalProject.FWD_HEADING;
 	private boolean ballCaptured = false;
 	private boolean ballReleased = false;
 	private boolean outOfMaze = false;
@@ -79,23 +79,23 @@ public class Pilot extends MovePilot {
 		float rotateAngle = 0;
 
 		if(xChange > 0) {
-			rotateAngle = Main.RIGHT_HEADING - heading;
-			heading = Main.RIGHT_HEADING;
+			rotateAngle = FinalProject.RIGHT_HEADING - heading;
+			heading = FinalProject.RIGHT_HEADING;
 		} else if(xChange < 0) {
-			rotateAngle = Main.LEFT_HEADING - heading;
-			heading = Main.LEFT_HEADING;
+			rotateAngle = FinalProject.LEFT_HEADING - heading;
+			heading = FinalProject.LEFT_HEADING;
 		} else if(yChange > 0) {
-			rotateAngle = Main.FWD_HEADING - heading;
-			heading = Main.FWD_HEADING;
+			rotateAngle = FinalProject.FWD_HEADING - heading;
+			heading = FinalProject.FWD_HEADING;
 		} else if(yChange < 0) {
-			rotateAngle = Main.BACK_HEADING - heading;
-			heading = Main.BACK_HEADING;
+			rotateAngle = FinalProject.BACK_HEADING - heading;
+			heading = FinalProject.BACK_HEADING;
 		}
 		
 		rotate(rotateAngle);
-		travel(Main.MOVE_INC);
+		travel(FinalProject.MOVE_INC);
 		//TODO check midpoint and adjust as needed
-		travel(Main.MOVE_INC);
+		travel(FinalProject.MOVE_INC);
 		//TODO check center of node as needed
 	}
 }
