@@ -59,11 +59,11 @@ public class Mast {
 	
 	//TODO soups check pls
 	public void lookLeft() {
-		mastMotor.rotateTo(-160);
+		mastMotor.rotateTo(-180);
 	}
 	
 	//TODO soups check pls
 	public void lookRight() {
-		mastMotor.rotateTo(160);
+		mastMotor.rotateTo(180);
 	}
 }

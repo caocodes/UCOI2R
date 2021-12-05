@@ -14,23 +14,24 @@ import lejos.robotics.navigation.Pose;
 import lejos.utility.Delay;
 
 public class FinalProject {
-	static Deque<MazeNode> nodeStack = new ArrayDeque<>();
+	static Deque<MazeNode> nodes = new ArrayDeque<>();
 	static Deque<MazeNode> exitPlan = new ArrayDeque<>();
 
-	public static final float NODE_SIZE = 38.1f;
-	public static final float MAZE_LENGTH = NODE_SIZE*3;
-	public static final float MAZE_WIDTH = NODE_SIZE*3;
-	public static final float MOVE_INC = NODE_SIZE / 2; // TODO check me. move increments in mm, stops midway between two nodes and look for marker to ensure robot is centered
+	public static final float NODE_SIZE = 47.8f;
+	public static final float MAZE_LENGTH = NODE_SIZE * 2;
+	public static final float MAZE_WIDTH = NODE_SIZE * 2;
+	public static final float MOVE_INC = NODE_SIZE / 2; // TODO check me. move increments in mm, stops midway between
+														// two nodes and look for marker to ensure robot is centered
 	public static final float MOVE_TOL = 10; // move tolerance mm
 	public static final float HEAD_TOL = 15; // heading tolerance degrees
 	public static final int BALL_COLOR = Color.BLUE; // 2
 	public static final int EXIT_COLOR = Color.RED; // 0
 	// TODO check my headings
-	public static final float LEFT_HEADING = 0; //degs
-	public static final float FWD_HEADING = 90; //degs
-	public static final float RIGHT_HEADING = 180; //degs
-	public static final float BACK_HEADING = 270; //degs
-	
+	public static final float LEFT_HEADING = 0; // degs
+	public static final float FWD_HEADING = 90; // degs
+	public static final float RIGHT_HEADING = 180; // degs
+	public static final float BACK_HEADING = 270; // degs
+
 	public static void main(String[] args) {
 		Pilot pilot = new Pilot();
 		Navigator nav = new Navigator(pilot);
@@ -39,13 +40,13 @@ public class FinalProject {
 		UltrasonicSensor ussr = new UltrasonicSensor(SensorPort.S1);
 		ColorSensor colorSensor = new ColorSensor(SensorPort.S4);
 		Mast mast = new Mast(MotorPort.B);
-		
-		MazeNode currentNode = new MazeNode(0, 0); 	// center of the left-bottom-most node
+
+		MazeNode currentNode = new MazeNode(0, 0); // center of the left-bottom-most node
 		currentNode.setVisited(true);
-		nodeStack.push(currentNode);
-		System.out.println("Node stack: " + nodeStack);
+		nodes.push(currentNode);
+		System.out.println("Node stack: " + nodes);
 		System.out.println("Current node: " + currentNode);
-		
+
 		MazeNode frontNode = null;
 		MazeNode leftNode = null;
 		MazeNode rightNode = null;
@@ -64,14 +65,15 @@ public class FinalProject {
 		while (!Button.ESCAPE.isDown()) {
 			// Check ball
 			int color = colorSensor.getColor();
-			System.out.println("Saw color: " + color);
-			if ((color == BALL_COLOR) || (color == 7) || (color == 1)) { // TODO @soups why 7 and 1 too?
+			System.out.println("Check ball color: " + color);
+			if ((color == BALL_COLOR) || (color == 1)) {
 				pilot.travel(5);
 				theClaw.grab();
+				pilot.travel(-5);
 				if (Math.abs(theClaw.checkRotation() - theClaw.getClosedRotation()) < 5) {
 					pilot.setBallCaptured(true);
-					
-					if(!exitPlan.isEmpty()) {
+
+					if (!exitPlan.isEmpty()) {
 						System.out.println("Exit plan: " + exitPlan);
 						exit(pilot, theClaw);
 						break;
@@ -84,17 +86,19 @@ public class FinalProject {
 			System.out.println("Look front");
 			int distance = ussr.distance();
 			System.out.println("distance: " + distance);
-			if (distance > MOVE_INC) {
+			if (distance > NODE_SIZE) {
 				frontNode = makeFrontNode(pilot.getHeading(), currentNode.getX(), currentNode.getY());
-				if(frontNode != null) {
+				if (frontNode != null) {
 					System.out.println("front node made: " + frontNode);
 					currentNode.addNeighbor(frontNode);
-				}	
+				}
 			}
 
 			mast.lookLeft();
 			System.out.println("Look left");
-			if (ussr.distance() > MOVE_INC) {
+			distance = ussr.distance();
+			System.out.println("distance: " + distance);
+			if (distance > NODE_SIZE) {
 				leftNode = makeLeftNode(pilot.getHeading(), currentNode.getX(), currentNode.getY());
 				if (leftNode != null) {
 					System.out.println("left node made: " + leftNode);
@@ -103,30 +107,31 @@ public class FinalProject {
 			}
 
 			mast.lookRight();
-			if (ussr.distance() > MOVE_INC) {
+			System.out.println("Look right");
+			distance = ussr.distance();
+			System.out.println("distance: " + distance);
+			if (distance > NODE_SIZE) {
 				rightNode = makeRightNode(pilot.getHeading(), currentNode.getX(), currentNode.getY());
 				if (rightNode != null) {
 					System.out.println("right node made: " + rightNode);
 					currentNode.addNeighbor(rightNode);
 				}
 			}
-			
-			mast.lookFront();
-			System.out.println(distance);
-			Delay.msDelay(10000);
+
+			mast.lookFront(); // in case robots die
 
 			MazeNode nextNode = currentNode.getUnvisitedNeighbor();
 			if (nextNode == null) { // deadend or visited all neighbors already
 				System.out.println("dead end / visited all");
 				nextNode = retrace(pilot);
-				currentNode = nodeStack.peek();
+				currentNode = nodes.peek();
 				System.out.println("retrace done");
 				System.out.println("current node: " + currentNode);
 				System.out.println("next node: " + nextNode);
 			} else { // not deadend
 				// check exit
 				color = colorSensor.getColor();
-				System.out.println("Saw color: " + color);
+				System.out.println("Check exit color: " + color);
 				if (currentNode.isExitNode(MAZE_WIDTH, MAZE_LENGTH) || color == EXIT_COLOR) {
 					System.out.println("Exited maze");
 					if (pilot.isBallCaptured()) {
@@ -135,31 +140,30 @@ public class FinalProject {
 						break;
 					} else {
 						System.out.println("Ball not captured. Make exit plan");
-						exitPlan.addAll(nodeStack);
+						exitPlan.addAll(nodes);
 						nextNode = retrace(pilot);
-						currentNode = nodeStack.peek();
+						currentNode = nodes.peek();
 						System.out.println("retrace done");
 						System.out.println("current node: " + currentNode);
 						System.out.println("next node: " + nextNode);
 					}
 				}
 			}
-			
+
 			nextNode.setCameFrom(currentNode);
-			nodeStack.push(nextNode);
-			System.out.println("Node stack: " + nodeStack);
+			nodes.push(nextNode);
+			System.out.println("Node stack: " + nodes);
 			moveListener.setNode(nextNode);
 			pilot.goTo(currentNode, nextNode);
-			while(pilot.isMoving()) {
+			while (pilot.isMoving()) {
 				Delay.msDelay(1000);
 			}
+			System.out.println("Finished moving");
 			currentNode = nextNode;
 			currentNode.setVisited(true);
 			System.out.println("Heading: " + pilot.getHeading());
 			System.out.println("current node: " + currentNode);
-//			while(!Button.ENTER.isDown()) {
-//				Delay.msDelay(1000);
-//			}
+			Delay.msDelay(7000);
 		}
 	}
 
@@ -176,6 +180,8 @@ public class FinalProject {
 			return new MazeNode(x - NODE_SIZE, y);
 		} else if (inRange(heading, RIGHT_HEADING, HEAD_TOL)) { // facing right. 180 degs. front node is east
 			return new MazeNode(x + NODE_SIZE, y);
+		} else if (inRange(heading, BACK_HEADING, HEAD_TOL)) {
+			return new MazeNode(x, y - NODE_SIZE);
 		} else {
 			System.out.println("ERROR: Heading OUT OF RANGE");
 			return null;
@@ -196,6 +202,8 @@ public class FinalProject {
 			return new MazeNode(x, y - NODE_SIZE);
 		} else if (inRange(heading, RIGHT_HEADING, HEAD_TOL)) { // facing right 180 degs. left node is north
 			return new MazeNode(x, y + NODE_SIZE);
+		} else if (inRange(heading, BACK_HEADING, HEAD_TOL)) {
+			return new MazeNode(x + NODE_SIZE, y);
 		} else {
 			System.out.println("ERROR: Heading OUT OF RANGE");
 			return null;
@@ -216,6 +224,8 @@ public class FinalProject {
 			return new MazeNode(x, y + NODE_SIZE);
 		} else if (inRange(heading, RIGHT_HEADING, HEAD_TOL)) { // facing right 180 degs. right node is south
 			return new MazeNode(x, y - NODE_SIZE);
+		} else if (inRange(heading, BACK_HEADING, HEAD_TOL)) {
+			return new MazeNode(x - NODE_SIZE, y);
 		} else {
 			System.out.println("ERROR: Heading OUT OF RANGE");
 			return null;
@@ -226,7 +236,8 @@ public class FinalProject {
 	 * @param value
 	 * @param target
 	 * @param tolerance
-	 * @return true if value is within range of target while accounting for tolerance
+	 * @return true if value is within range of target while accounting for
+	 *         tolerance
 	 */
 	public static boolean inRange(float value, float target, float tolerance) {
 		return (target - tolerance) <= value && value <= (target + tolerance);
@@ -236,48 +247,54 @@ public class FinalProject {
 	 * move back to first node in stack that has unvisited neighbor
 	 */
 	public static MazeNode retrace(Pilot pilot) {
-		while(nodeStack.peek().visitedAllNeighbors()) {
-			pilot.goTo(nodeStack.pop(), nodeStack.peek());
-			while(pilot.isMoving()) {
+		MazeNode currentNode = nodes.peek();
+		while (currentNode.visitedAllNeighbors()) {
+			currentNode = nodes.pop();
+			MazeNode nextNode = nodes.peek();
+			pilot.goTo(currentNode, nextNode);
+			while (pilot.isMoving()) {
 				Delay.msDelay(1000);
 			}
+			System.out.println("retraced move");
+			currentNode = nextNode;
 		}
-		return nodeStack.peek().getUnvisitedNeighbor();
+		return nodes.peek().getUnvisitedNeighbor();
 	}
-	
+
 	/**
 	 * exit the maze
+	 * 
 	 * @param pilot
 	 * @param theClaw
 	 */
 	public static void exit(Pilot pilot, TheClaw theClaw) {
-		if(exitPlan.isEmpty() || nodeStack.isEmpty())
+		if (exitPlan.isEmpty() || nodes.isEmpty())
 			return;
 		Iterator<MazeNode> exitIt = exitPlan.descendingIterator();
-		Iterator<MazeNode> nodeIt = nodeStack.descendingIterator();
+		Iterator<MazeNode> nodeIt = nodes.descendingIterator();
 		MazeNode common = null;
-		while(exitIt.hasNext()) {
+		while (exitIt.hasNext()) {
 			MazeNode exitNode = exitIt.next();
 			MazeNode node = nodeIt.next();
-		    if(exitNode.equals(node)) {
-		    	common = exitNode;
-		    	exitPlan.removeLast();
-		    	nodeStack.removeLast();
-		    }
+			if (exitNode.equals(node)) {
+				common = exitNode;
+				exitPlan.removeLast();
+				nodes.removeLast();
+			}
 		}
-		
-		if(common != null) {
+
+		if (common != null) {
 			exitPlan.addLast(common);
 		}
-		while(!exitPlan.isEmpty()) {
-			nodeStack.addLast(exitPlan.removeLast());
+		while (!exitPlan.isEmpty()) {
+			nodes.addLast(exitPlan.removeLast());
 		}
-		
-		while(nodeStack.size() > 1) {
-			MazeNode currentNode = nodeStack.pop();
-			MazeNode nextNode = nodeStack.peek();
+
+		while (nodes.size() > 1) {
+			MazeNode currentNode = nodes.pop();
+			MazeNode nextNode = nodes.peek();
 			pilot.goTo(currentNode, nextNode);
-			while(pilot.isMoving()) {
+			while (pilot.isMoving()) {
 				Delay.msDelay(1000);
 			}
 		}

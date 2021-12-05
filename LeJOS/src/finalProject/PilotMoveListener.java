@@ -18,8 +18,6 @@ public class PilotMoveListener implements MoveListener {
 	public void moveStopped(Move event, MoveProvider mp) {
 		if(node != null) {
 			node.addMove(event);
-			System.out.println("Move Added for " + node.toString());
-			System.out.println(event);
 		}
 	}
 }

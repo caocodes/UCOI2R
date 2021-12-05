@@ -92,7 +92,7 @@ public class Pilot extends MovePilot {
 			heading = FinalProject.BACK_HEADING;
 		}
 		
-		rotate(rotateAngle);
+		rotate(rotateAngle + rotateAngle/45);
 		travel(FinalProject.MOVE_INC);
 		//TODO check midpoint and adjust as needed
 		travel(FinalProject.MOVE_INC);

@@ -119,7 +119,7 @@ public class MazeNode {
 	
 	@Override
 	public String toString() {
-		return String.format("Node: (%f,%f), Visited: %b", x,y,visited);
+		return String.format("Node: (%.3f,%.3f), Visited: %b", x,y,visited);
 	}
 
 	@Override
