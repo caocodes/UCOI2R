@@ -26,9 +26,9 @@ public class FinalProject {
 	public static final int BALL_COLOR = Color.BLUE; // 2
 	public static final int EXIT_COLOR = Color.RED; // 0
 	// TODO check my headings
-	public static final float LEFT_HEADING = 0; //degs
-	public static final float FWD_HEADING = 90; //degs
-	public static final float RIGHT_HEADING = 180; //degs
+	public static final float LEFT_HEADING = -160; //degs
+	public static final float FWD_HEADING = 0; //degs
+	public static final float RIGHT_HEADING = 160; //degs
 	public static final float BACK_HEADING = 270; //degs
 	
 	public static void main(String[] args) {
@@ -110,6 +110,10 @@ public class FinalProject {
 					currentNode.addNeighbor(rightNode);
 				}
 			}
+			
+			mast.lookFront();
+			System.out.println(distance);
+			Delay.msDelay(10000);
 
 			MazeNode nextNode = currentNode.getUnvisitedNeighbor();
 			if (nextNode == null) { // deadend or visited all neighbors already
