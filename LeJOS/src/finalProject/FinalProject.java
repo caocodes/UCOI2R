@@ -17,7 +17,7 @@ public class FinalProject {
 	static Deque<MazeNode> nodeStack = new ArrayDeque<>();
 	static Deque<MazeNode> exitPlan = new ArrayDeque<>();
 
-	public static final float NODE_SIZE = 25.4f;
+	public static final float NODE_SIZE = 38.1f;
 	public static final float MAZE_LENGTH = NODE_SIZE*3;
 	public static final float MAZE_WIDTH = NODE_SIZE*3;
 	public static final float MOVE_INC = NODE_SIZE / 2; // TODO check me. move increments in mm, stops midway between two nodes and look for marker to ensure robot is centered
@@ -26,9 +26,9 @@ public class FinalProject {
 	public static final int BALL_COLOR = Color.BLUE; // 2
 	public static final int EXIT_COLOR = Color.RED; // 0
 	// TODO check my headings
-	public static final float LEFT_HEADING = -160; //degs
-	public static final float FWD_HEADING = 0; //degs
-	public static final float RIGHT_HEADING = 160; //degs
+	public static final float LEFT_HEADING = 0; //degs
+	public static final float FWD_HEADING = 90; //degs
+	public static final float RIGHT_HEADING = 180; //degs
 	public static final float BACK_HEADING = 270; //degs
 	
 	public static void main(String[] args) {
@@ -157,9 +157,9 @@ public class FinalProject {
 			currentNode.setVisited(true);
 			System.out.println("Heading: " + pilot.getHeading());
 			System.out.println("current node: " + currentNode);
-			while(!Button.ENTER.isDown()) {
-				Delay.msDelay(1000);
-			}
+//			while(!Button.ENTER.isDown()) {
+//				Delay.msDelay(1000);
+//			}
 		}
 	}
 

@@ -54,17 +54,16 @@ public class Mast {
 	
 	//TODO soups check pls
 	public void lookFront() {
-		mastMotor.rotateTo((int)FinalProject.FWD_HEADING);
+		mastMotor.rotateTo(0);
 	}
 	
 	//TODO soups check pls
 	public void lookLeft() {
-		mastMotor.rotateTo((int)FinalProject.LEFT_HEADING);
+		mastMotor.rotateTo(-160);
 	}
 	
 	//TODO soups check pls
 	public void lookRight() {
-		System.out.println("Look right");
-		mastMotor.rotateTo((int)FinalProject.RIGHT_HEADING);
+		mastMotor.rotateTo(160);
 	}
 }

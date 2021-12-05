@@ -28,7 +28,7 @@ public class UltrasonicSensor {
 		average = new MeanFilter(distMode, 10);
 		sample = new float[average.sampleSize()];
 		average.fetchSample(sample, 0);
-		distance = (int) (sample[0] * 1000);  // to easily filter out some noise 
+		distance = (int) (sample[0] * 100);  
         return distance;
     }
 
