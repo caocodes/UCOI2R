@@ -31,6 +31,8 @@ public class FinalProject {
 	public static final float FWD_HEADING = 90; // degs
 	public static final float RIGHT_HEADING = 180; // degs
 	public static final float BACK_HEADING = 270; // degs
+	
+	private static final MazeNode EXIT_NODE = new MazeNode(2*NODE_SIZE,2*NODE_SIZE);
 
 	public static void main(String[] args) {
 		Pilot pilot = new Pilot();
@@ -128,25 +130,23 @@ public class FinalProject {
 				System.out.println("retrace done");
 				System.out.println("current node: " + currentNode);
 				System.out.println("next node: " + nextNode);
-			} else { // not deadend
-				// check exit
-				color = colorSensor.getColor();
-				System.out.println("Check exit color: " + color);
-				if (currentNode.isExitNode(MAZE_WIDTH, MAZE_LENGTH) || color == EXIT_COLOR) {
-					System.out.println("Exited maze");
-					if (pilot.isBallCaptured()) {
-						System.out.println("Ball captured. Try claw");
-						theClaw.release();
-						break;
-					} else {
-						System.out.println("Ball not captured. Make exit plan");
-						exitPlan.addAll(nodes);
-						nextNode = retrace(pilot);
-						currentNode = nodes.peek();
-						System.out.println("retrace done");
-						System.out.println("current node: " + currentNode);
-						System.out.println("next node: " + nextNode);
-					}
+			}
+			
+			if (currentNode.equals(EXIT_NODE) || currentNode.isExitNode(MAZE_WIDTH, MAZE_LENGTH)) {
+				System.out.println("At exit node");
+				if (pilot.isBallCaptured()) {
+					pilot.goTo(currentNode, currentNode.getUnvisitedNeighbor());
+					System.out.println("Release the CLAW!!!");
+					theClaw.release();
+					break;
+				} else {
+					System.out.println("Ball not captured. Make exit plan");
+					exitPlan.addAll(nodes);
+					nextNode = retrace(pilot);
+					currentNode = nodes.peek();
+					System.out.println("retrace done");
+					System.out.println("current node: " + currentNode);
+					System.out.println("next node: " + nextNode);
 				}
 			}
 
@@ -163,7 +163,6 @@ public class FinalProject {
 			currentNode.setVisited(true);
 			System.out.println("Heading: " + pilot.getHeading());
 			System.out.println("current node: " + currentNode);
-			Delay.msDelay(7000);
 		}
 	}
 
