@@ -9,8 +9,8 @@ import lejos.robotics.navigation.MoveController;
 import lejos.robotics.navigation.MovePilot;
 
 public class Pilot extends MovePilot {
-	static final double PILOT_LINEAR_SPEED = 25; // m/s
-	static final double PILOT_ANGULAR_SPEED = 15; // deg/s
+	static final double PILOT_LINEAR_SPEED = 20; // m/s
+	static final double PILOT_ANGULAR_SPEED = 10; // deg/s
 	static final double OFFSET = 20.32 * 0.8 * 0.5; // m, 1/2 track width times a correction modifier
 	static final double FWD_INCREMENT = 1; // m
 	static final double MAX_TURN_ANGLE = 15; // deg

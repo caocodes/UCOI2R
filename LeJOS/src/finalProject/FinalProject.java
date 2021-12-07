@@ -22,6 +22,7 @@ public class FinalProject {
 	public static final float MAZE_WIDTH = NODE_SIZE * 2;
 	public static final float MOVE_INC = NODE_SIZE / 2; // TODO check me. move increments in mm, stops midway between
 														// two nodes and look for marker to ensure robot is centered
+	public static final float D_CHECK = 2f*NODE_SIZE/3f;
 	public static final float MOVE_TOL = 10; // move tolerance mm
 	public static final float HEAD_TOL = 15; // heading tolerance degrees
 	public static final int BALL_COLOR = Color.BLUE; // 2
@@ -37,9 +38,9 @@ public class FinalProject {
 	public static void main(String[] args) {
 		Pilot pilot = new Pilot();
 		Navigator nav = new Navigator(pilot);
-		TheClaw theClaw = new TheClaw(MotorPort.C);
-
+		
 		UltrasonicSensor ussr = new UltrasonicSensor(SensorPort.S1);
+		TheClaw theClaw = new TheClaw(MotorPort.C);
 		ColorSensor colorSensor = new ColorSensor(SensorPort.S4);
 		Mast mast = new Mast(MotorPort.B);
 
@@ -88,7 +89,7 @@ public class FinalProject {
 			System.out.println("Look front");
 			int distance = ussr.distance();
 			System.out.println("distance: " + distance);
-			if (distance > NODE_SIZE) {
+			if (distance > D_CHECK) {
 				frontNode = makeFrontNode(pilot.getHeading(), currentNode.getX(), currentNode.getY());
 				if (frontNode != null) {
 					System.out.println("front node made: " + frontNode);
@@ -100,7 +101,7 @@ public class FinalProject {
 			System.out.println("Look left");
 			distance = ussr.distance();
 			System.out.println("distance: " + distance);
-			if (distance > NODE_SIZE) {
+			if (distance > D_CHECK) {
 				leftNode = makeLeftNode(pilot.getHeading(), currentNode.getX(), currentNode.getY());
 				if (leftNode != null) {
 					System.out.println("left node made: " + leftNode);
@@ -112,7 +113,7 @@ public class FinalProject {
 			System.out.println("Look right");
 			distance = ussr.distance();
 			System.out.println("distance: " + distance);
-			if (distance > NODE_SIZE) {
+			if (distance > D_CHECK) {
 				rightNode = makeRightNode(pilot.getHeading(), currentNode.getX(), currentNode.getY());
 				if (rightNode != null) {
 					System.out.println("right node made: " + rightNode);
@@ -247,7 +248,7 @@ public class FinalProject {
 	 */
 	public static MazeNode retrace(Pilot pilot) {
 		MazeNode currentNode = nodes.peek();
-		while (currentNode.visitedAllNeighbors()) {
+		while (currentNode.visitedAllNeighbors() || currentNode.equals(EXIT_NODE)) {
 			currentNode = nodes.pop();
 			MazeNode nextNode = nodes.peek();
 			pilot.goTo(currentNode, nextNode);
